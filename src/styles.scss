@@ -683,7 +683,7 @@ input {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
 .tempo-value {
@@ -709,7 +709,7 @@ input {
 
 .tempo-control {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   gap: 1rem;
   width: 100%;
@@ -717,14 +717,23 @@ input {
   .tempo-buttons-left,
   .tempo-buttons-right {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
     min-width: 50px;
+    padding: 2rem 0;
+
+    button {
+      flex: 1;
+      min-height: auto;
+    }
   }
 
   .tempo-display {
     flex: 1;
     max-width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
