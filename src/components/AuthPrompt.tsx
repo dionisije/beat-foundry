@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { LogOut, Mail } from 'lucide-react';
 
 interface AuthPromptProps {
@@ -18,6 +18,7 @@ export default function AuthPrompt({
   isLoading,
   error
 }: AuthPromptProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,10 +37,21 @@ export default function AuthPrompt({
           disabled={isLoading}
         >
           <LogOut size={16} />
-          Sign out
         </button>
       </div>
     );
+  }
+
+  function openDialog() {
+    setMode('login');
+    setEmail('');
+    setPassword('');
+    setLocalError(null);
+    dialogRef.current?.showModal();
+  }
+
+  function closeDialog() {
+    dialogRef.current?.close();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -59,61 +71,86 @@ export default function AuthPrompt({
       }
       setEmail('');
       setPassword('');
+      closeDialog();
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Authentication failed');
     }
   }
 
   return (
-    <div className="auth-prompt">
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            disabled={isLoading}
-            required
-          />
-        </label>
+    <>
+      <button
+        className="btn btn-secondary btn-small"
+        onClick={openDialog}
+        disabled={isLoading}
+      >
+        <Mail size={16} />
+        Sign in
+      </button>
 
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            disabled={isLoading}
-            required
-          />
-        </label>
+      <dialog ref={dialogRef} className="auth-dialog">
+        <div className="auth-dialog-content">
+          <h2>Sign in to BeatFoundry</h2>
 
-        {(error || localError) && (
-          <p className="error">{error || localError}</p>
-        )}
+          <form onSubmit={handleSubmit}>
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                disabled={isLoading}
+                required
+                autoFocus
+              />
+            </label>
 
-        <div className="auth-buttons">
+            <label>
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                disabled={isLoading}
+                required
+              />
+            </label>
+
+            {(error || localError) && (
+              <p className="error">{error || localError}</p>
+            )}
+
+            <div className="auth-buttons">
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
+              </button>
+
+              <button
+                className="btn"
+                type="button"
+                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                disabled={isLoading}
+              >
+                {mode === 'login' ? 'Create account' : 'Sign in'}
+              </button>
+            </div>
+          </form>
+
           <button
-            className="btn btn-primary"
-            type="submit"
-            disabled={isLoading}
+            className="auth-dialog-close"
+            onClick={closeDialog}
+            aria-label="Close dialog"
           >
-            {isLoading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
-          </button>
-
-          <button
-            className="btn"
-            type="button"
-            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            disabled={isLoading}
-          >
-            {mode === 'login' ? 'Create account' : 'Sign in'}
+            ✕
           </button>
         </div>
-      </form>
-    </div>
+      </dialog>
+    </>
   );
 }
