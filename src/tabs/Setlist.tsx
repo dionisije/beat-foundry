@@ -1,0 +1,332 @@
+import { useState, type FormEvent } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Trash2, Plus } from 'lucide-react';
+import {
+  db,
+  createSetlist,
+  deleteSetlist,
+  addSetlistItem,
+  deleteSetlistItem,
+  updateSetlistItem,
+  type Setlist as SetlistType,
+  type SetlistItem,
+  type Song
+} from '../db';
+
+const SECTIONS = ['Set 1', 'Set 2', 'Set 3', 'Encore'];
+
+export default function Setlist() {
+  const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
+  const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
+  const [activeSetlistId, setActiveSetlistId] = useState<string | null>(null);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newSetlistName, setNewSetlistName] = useState('');
+
+  async function handleCreateSetlist(e: FormEvent) {
+    e.preventDefault();
+    if (!newSetlistName.trim()) return;
+
+    const id = await createSetlist({ name: newSetlistName });
+    setNewSetlistName('');
+    setShowNewForm(false);
+    setActiveSetlistId(id);
+  }
+
+  if (setlists.length === 0) {
+    return (
+      <div className="stack">
+        <div className="panel">
+          <h2>Create Your First Setlist</h2>
+          <form onSubmit={handleCreateSetlist}>
+            <label>
+              Setlist Name
+              <input
+                value={newSetlistName}
+                onChange={(e) => setNewSetlistName(e.target.value)}
+                placeholder="e.g., Acoustic Set"
+                required
+              />
+            </label>
+            <button className="btn btn-primary" type="submit" disabled={!newSetlistName.trim()}>
+              Create Setlist
+            </button>
+          </form>
+        </div>
+        <p className="empty">Create a setlist to organize your songs for performances.</p>
+      </div>
+    );
+  }
+
+  const activeSetlist = setlists.find((s) => s.id === activeSetlistId) ?? (setlists.length > 0 ? setlists[0] : null);
+
+  if (activeSetlist && !activeSetlistId) {
+    setActiveSetlistId(activeSetlist.id);
+  }
+
+  if (!activeSetlist) {
+    return (
+      <div className="stack">
+        <p className="empty">Create a setlist to get started.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="stack">
+      {/* Setlist Selector */}
+      <div className="panel">
+        <div className="tabs-selector">
+          {setlists.map((setlist) => (
+            <button
+              key={setlist.id}
+              className={`tab-btn ${activeSetlistId === setlist.id ? 'active' : ''}`}
+              onClick={() => setActiveSetlistId(setlist.id)}
+            >
+              {setlist.name}
+            </button>
+          ))}
+          <button
+            className="tab-btn add-tab"
+            onClick={() => setShowNewForm(true)}
+            title="Create new setlist"
+          >
+            +
+          </button>
+        </div>
+
+        {activeSetlist && (
+          <button
+            className="btn btn-danger btn-small"
+            onClick={() => {
+              if (confirm(`Delete "${activeSetlist.name}"?`)) {
+                void deleteSetlist(activeSetlist.id);
+                setActiveSetlistId(null);
+              }
+            }}
+          >
+            Delete Setlist
+          </button>
+        )}
+      </div>
+
+      {/* New Setlist Form */}
+      {showNewForm && (
+        <form className="panel add-form" onSubmit={handleCreateSetlist}>
+          <label>
+            Setlist Name
+            <input
+              value={newSetlistName}
+              onChange={(e) => setNewSetlistName(e.target.value)}
+              placeholder="e.g., Evening Performance"
+              autoFocus
+              required
+            />
+          </label>
+          <div className="button-group">
+            <button className="btn btn-primary" type="submit" disabled={!newSetlistName.trim()}>
+              Create
+            </button>
+            <button
+              className="btn"
+              type="button"
+              onClick={() => {
+                setNewSetlistName('');
+                setShowNewForm(false);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Active Setlist Content */}
+      {activeSetlist && (
+        <SetlistContent setlist={activeSetlist} songs={songs} />
+      )}
+    </div>
+  );
+}
+
+function SetlistContent({ setlist, songs }: { setlist: SetlistType; songs: Song[] }) {
+  const items = useLiveQuery(
+    () =>
+      db.setlistItems
+        .filter((item) => item.setlistId === setlist.id && item.deleted === 0)
+        .sortBy('position'),
+    [],
+    [setlist.id]
+  );
+
+  const [selectedSongId, setSelectedSongId] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string>('');
+
+  async function handleAddSong(e: FormEvent) {
+    e.preventDefault();
+    if (!selectedSongId) return;
+
+    const maxPosition = items.length > 0 ? Math.max(...items.map((i: any) => i.position ?? 0)) + 1 : 0;
+    await addSetlistItem({
+      setlistId: setlist.id,
+      songId: selectedSongId,
+      position: maxPosition,
+      section: selectedSection || undefined
+    });
+
+    setSelectedSongId('');
+    setSelectedSection('');
+  }
+
+  return (
+    <>
+      <form className="panel add-form" onSubmit={handleAddSong}>
+        <label>
+          Add Song
+          <select
+            value={selectedSongId}
+            onChange={(e) => setSelectedSongId(e.target.value)}
+            required
+          >
+            <option value="">Select a song...</option>
+            {songs.map((song) => (
+              <option key={song.id} value={song.id}>
+                {song.name} ({Math.round(song.bpm)} BPM)
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Section (Optional)
+          <select value={selectedSection} onChange={(e) => setSelectedSection(e.target.value)}>
+            <option value="">No section</option>
+            {SECTIONS.map((section) => (
+              <option key={section} value={section}>
+                {section}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button className="btn btn-primary" type="submit" disabled={!selectedSongId}>
+          <Plus size={18} />
+          Add to Setlist
+        </button>
+      </form>
+
+      {items.length === 0 ? (
+        <p className="empty">Add songs from your repertoire to create your setlist.</p>
+      ) : (
+        <div className="panel setlist-items">
+          <h3>Setlist Items ({items.length})</h3>
+          <ul className="setlist-list">
+            {items.map((item: any, index: number) => (
+              <SetlistItemRow
+                key={item.id}
+                item={item}
+                index={index}
+                total={items.length}
+                song={songs.find((s) => s.id === item.songId)}
+              />
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+}
+
+function SetlistItemRow({
+  item,
+  index,
+  total,
+  song
+}: {
+  item: SetlistItem;
+  index: number;
+  total: number;
+  song?: Song;
+}) {
+  const [sectionEdit, setSectionEdit] = useState<string | null>(null);
+
+  async function handleMove(direction: 'up' | 'down') {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === total - 1)) {
+      return;
+    }
+
+    const newPosition = direction === 'up' ? item.position - 1 : item.position + 1;
+    await updateSetlistItem(item.id, { position: newPosition });
+  }
+
+  async function handleSectionChange(section: string) {
+    await updateSetlistItem(item.id, { section: section || undefined });
+    setSectionEdit(null);
+  }
+
+  if (!song) return null;
+
+  return (
+    <li className="setlist-item">
+      <div className="item-content">
+        {item.section && (
+          <span className="section-badge">{item.section}</span>
+        )}
+        <div className="item-info">
+          <span className="item-number">{index + 1}.</span>
+          <span className="song-name">{song.name}</span>
+          <span className="song-bpm">{Math.round(song.bpm)} BPM</span>
+        </div>
+      </div>
+
+      <div className="row-actions">
+        <button
+          className="icon-btn"
+          onClick={() => handleMove('up')}
+          disabled={index === 0}
+          title="Move up"
+        >
+          ↑
+        </button>
+        <button
+          className="icon-btn"
+          onClick={() => handleMove('down')}
+          disabled={index === total - 1}
+          title="Move down"
+        >
+          ↓
+        </button>
+
+        {sectionEdit === item.id ? (
+          <select
+            autoFocus
+            value={item.section ?? ''}
+            onChange={(e) => void handleSectionChange(e.target.value)}
+            onBlur={() => setSectionEdit(null)}
+          >
+            <option value="">No section</option>
+            {SECTIONS.map((section) => (
+              <option key={section} value={section}>
+                {section}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <button
+            className="btn btn-secondary btn-small"
+            onClick={() => setSectionEdit(item.id)}
+          >
+            {item.section ?? 'Add section'}
+          </button>
+        )}
+
+        <button
+          className="icon-btn"
+          onClick={() => void deleteSetlistItem(item.id)}
+          title={`Remove ${song.name}`}
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </li>
+  );
+}
