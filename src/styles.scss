@@ -383,6 +383,7 @@ input {
 }
 
 .search {
+  width: 100%;
   background: var(--surface);
 }
 
@@ -848,6 +849,16 @@ input {
     border-bottom: 1px solid var(--line);
   }
 
+  .sortable-header {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+  }
+
   td {
     padding: 0.75rem;
     border-bottom: 1px solid var(--line);
@@ -881,7 +892,8 @@ input {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  align-items: flex-start;
+  align-items: stretch;
+  width: 100%;
 }
 
 .sort-controls {
