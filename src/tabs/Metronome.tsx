@@ -6,8 +6,7 @@ export default function MetronomeTab() {
   const [bpm, setBpm] = useState(120);
   const [isPlaying, setIsPlaying] = useState(false);
   const [beatsPlayed, setBeatsPlayed] = useState(0);
-  const [performanceBeats, setPerformanceBeats] = useState(16);
-  const [showPerformanceMode, setShowPerformanceMode] = useState(false);
+  const [selectedBeats, setSelectedBeats] = useState<16 | 20 | 24 | 28 | 32 | null>(null);
   const metronomeRef = useRef<Metronome | null>(null);
 
   useEffect(() => {
@@ -22,7 +21,7 @@ export default function MetronomeTab() {
 
   async function handleStart() {
     if (metronomeRef.current) {
-      const beatsToPlay = showPerformanceMode ? performanceBeats : undefined;
+      const beatsToPlay = selectedBeats || undefined;
       await metronomeRef.current.start(beatsToPlay);
       setIsPlaying(true);
       setBeatsPlayed(0);
@@ -31,7 +30,7 @@ export default function MetronomeTab() {
         setBeatsPlayed(beatNumber);
       });
 
-      if (showPerformanceMode) {
+      if (selectedBeats) {
         metronomeRef.current.setCompleteCallback(() => {
           setIsPlaying(false);
         });
@@ -55,9 +54,8 @@ export default function MetronomeTab() {
     }
   }
 
-  function handlePerformanceBeatChange(change: number) {
-    const newBeats = Math.max(4, Math.min(100, performanceBeats + change));
-    setPerformanceBeats(newBeats);
+  function toggleBeats(beats: 16 | 20 | 24 | 28 | 32) {
+    setSelectedBeats(selectedBeats === beats ? null : beats);
   }
 
   return (
@@ -134,53 +132,49 @@ export default function MetronomeTab() {
         )}
       </div>
 
-      {/* Performance Mode Section */}
+      {/* Beat Count Selection */}
       <div className="panel">
         <h3>Performance Mode</h3>
         <p className="muted">
-          Stop the metronome after a set number of beats (useful for practice sessions).
+          Select a beat count to stop after a set number of beats, or click again to disable.
         </p>
 
-        <label>
-          Beats to play
-          <input
-            type="number"
-            min="4"
-            max="100"
-            step="4"
-            value={performanceBeats}
-            onChange={(e) => setPerformanceBeats(Math.max(4, parseInt(e.target.value) || 4))}
-            disabled={isPlaying}
-          />
-        </label>
-
-        <div className="button-group">
+        <div className="beat-buttons">
           <button
-            className="btn btn-secondary"
-            onClick={() => handlePerformanceBeatChange(-4)}
+            className={`btn ${selectedBeats === 16 ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => toggleBeats(16)}
             disabled={isPlaying}
           >
-            <Minus size={20} />
+            16
           </button>
           <button
-            className="btn btn-secondary"
-            onClick={() => handlePerformanceBeatChange(4)}
+            className={`btn ${selectedBeats === 20 ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => toggleBeats(20)}
             disabled={isPlaying}
           >
-            <Plus size={20} />
+            20
           </button>
-        </div>
-
-        <div className="button-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={showPerformanceMode}
-              onChange={(e) => setShowPerformanceMode(e.target.checked)}
-              disabled={isPlaying}
-            />
-            Use Performance Mode
-          </label>
+          <button
+            className={`btn ${selectedBeats === 24 ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => toggleBeats(24)}
+            disabled={isPlaying}
+          >
+            24
+          </button>
+          <button
+            className={`btn ${selectedBeats === 28 ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => toggleBeats(28)}
+            disabled={isPlaying}
+          >
+            28
+          </button>
+          <button
+            className={`btn ${selectedBeats === 32 ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => toggleBeats(32)}
+            disabled={isPlaying}
+          >
+            32
+          </button>
         </div>
       </div>
 
