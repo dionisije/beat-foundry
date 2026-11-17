@@ -27,10 +27,6 @@ export default function AuthPrompt({
   if (currentUser) {
     return (
       <div className="auth-status">
-        <div className="auth-info">
-          <Mail size={18} />
-          <span>{currentUser}</span>
-        </div>
         <button
           className="btn btn-secondary btn-small"
           onClick={() => void onLogout()}

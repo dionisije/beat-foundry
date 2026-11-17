@@ -4,7 +4,9 @@
       "Bash(npm run *)",
       "Bash(pkill -f \"vite\")",
       "Bash(pkill -f \"node\")",
-      "Bash(mv /Users/dick.marjanovic/Projects/Training/pwa-starter /Users/dick.marjanovic/Projects/Training/beat-foundry && echo \"✅ Project renamed successfully!\")"
+      "Bash(mv /Users/dick.marjanovic/Projects/Training/pwa-starter /Users/dick.marjanovic/Projects/Training/beat-foundry && echo \"✅ Project renamed successfully!\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

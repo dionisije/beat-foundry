@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { db, createSong, deleteSong, updateSong, type Song } from '../db';
 
 export default function Repertoire() {
@@ -89,23 +89,6 @@ export default function Repertoire() {
             onChange={(e) => setQuery(e.target.value)}
             aria-label="Search songs"
           />
-
-          <div className="sort-controls">
-            <label>
-              Sort by:
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'name' | 'bpm')}>
-                <option value="name">Name</option>
-                <option value="bpm">BPM</option>
-              </select>
-            </label>
-            <button
-              className="btn btn-secondary"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              title={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
-            >
-              {sortOrder === 'asc' ? <ArrowUp size={18} /> : <ArrowDown size={18} />}
-            </button>
-          </div>
         </div>
       </div>
 
@@ -118,8 +101,34 @@ export default function Repertoire() {
           <table className="songs-table">
             <thead>
               <tr>
-                <th>Song Name</th>
-                <th>BPM</th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'name') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('name');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className="sortable-header"
+                  title="Click to sort by song name"
+                >
+                  Song Name {sortBy === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'bpm') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('bpm');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className="sortable-header"
+                  title="Click to sort by BPM"
+                >
+                  BPM {sortBy === 'bpm' && (sortOrder === 'asc' ? '▲' : '▼')}
+                </th>
                 <th>Actions</th>
               </tr>
             </thead>
