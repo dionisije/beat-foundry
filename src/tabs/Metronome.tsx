@@ -63,46 +63,54 @@ export default function MetronomeTab() {
   return (
     <div className="stack">
       <div className="panel">
-        <div className="tempo-display">
-          <div className="tempo-value">
-            <span className="bpm-number">{bpm}</span>
-            <span className="bpm-label">BPM</span>
+        <div className="tempo-control">
+          {/* Left buttons */}
+          <div className="tempo-buttons-left">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleBpmChange(-5)}
+              disabled={isPlaying}
+              title="Decrease BPM by 5"
+            >
+              <Minus size={16} />
+            </button>
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleBpmChange(-1)}
+              disabled={isPlaying}
+              title="Decrease BPM by 1"
+            >
+              -1
+            </button>
           </div>
-        </div>
 
-        <div className="button-group">
-          <button
-            className="btn btn-secondary"
-            onClick={() => handleBpmChange(-5)}
-            disabled={isPlaying}
-            title="Decrease BPM by 5"
-          >
-            <Minus size={20} />
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => handleBpmChange(-1)}
-            disabled={isPlaying}
-            title="Decrease BPM by 1"
-          >
-            -1
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => handleBpmChange(1)}
-            disabled={isPlaying}
-            title="Increase BPM by 1"
-          >
-            +1
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => handleBpmChange(5)}
-            disabled={isPlaying}
-            title="Increase BPM by 5"
-          >
-            <Plus size={20} />
-          </button>
+          {/* Center display */}
+          <div className="tempo-display">
+            <div className="tempo-value">
+              <span className="bpm-number">{bpm}</span>
+              <span className="bpm-label">BPM</span>
+            </div>
+          </div>
+
+          {/* Right buttons */}
+          <div className="tempo-buttons-right">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleBpmChange(1)}
+              disabled={isPlaying}
+              title="Increase BPM by 1"
+            >
+              +1
+            </button>
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleBpmChange(5)}
+              disabled={isPlaying}
+              title="Increase BPM by 5"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
         </div>
 
         <div className="button-group">

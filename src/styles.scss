@@ -707,6 +707,27 @@ input {
   font-weight: 500;
 }
 
+.tempo-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+
+  .tempo-buttons-left,
+  .tempo-buttons-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 50px;
+  }
+
+  .tempo-display {
+    flex: 1;
+    max-width: 150px;
+  }
+}
+
 .beat-info {
   text-align: center;
   font-size: 0.95rem;
