@@ -1,5 +1,19 @@
 import Dexie, { type EntityTable } from 'dexie';
 
+function generateId(): string {
+  // Use crypto.randomUUID if available, otherwise fall back to a simple UUID v4-like generator
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  // Fallback UUID v4-like generator that works in all environments
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 /**
  * IndexedDB is the source of truth. The UI only ever reads and writes here;
  * the sync engine reconciles with the remote service in the background.
@@ -89,7 +103,7 @@ export async function createItem(input: { name: string; notes?: string }) {
     throw new Error(`The list is full. Remove an item to add a new one (limit ${MAX_ITEMS}).`);
   }
   await db.items.add({
-    id: crypto.randomUUID(),
+    id: generateId(),
     name: input.name.trim(),
     notes: input.notes?.trim() ?? '',
     updatedAt: Date.now(),
@@ -116,7 +130,7 @@ export async function clearLocalData() {
 // Song management
 export async function createSong(input: { name: string; bpm: number }) {
   await db.songs.add({
-    id: crypto.randomUUID(),
+    id: generateId(),
     name: input.name.trim(),
     bpm: input.bpm,
     updatedAt: Date.now(),
@@ -136,7 +150,7 @@ export async function deleteSong(id: string) {
 // Setlist management
 export async function createSetlist(input: { name: string }) {
   return await db.setlists.add({
-    id: crypto.randomUUID(),
+    id: generateId(),
     name: input.name.trim(),
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -156,7 +170,7 @@ export async function deleteSetlist(id: string) {
 // Setlist item management
 export async function addSetlistItem(input: { setlistId: string; songId: string; position: number; section?: string }) {
   await db.setlistItems.add({
-    id: crypto.randomUUID(),
+    id: generateId(),
     setlistId: input.setlistId,
     songId: input.songId,
     position: input.position,
