@@ -362,6 +362,7 @@ input {
   &:focus-visible {
     @include focus-ring;
   }
+
 }
 
 .add-form {
@@ -377,6 +378,7 @@ input {
 
   .btn {
     align-self: flex-start;
+    column-gap: 0.5rem;
   }
 }
 
@@ -393,7 +395,7 @@ input {
   label {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
     font-size: 0.875rem;
     color: var(--muted);
   }
@@ -437,6 +439,7 @@ input {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  column-gap: 0.5rem;
 
   &:disabled {
     opacity: 0.5;
@@ -544,6 +547,7 @@ input {
 
   .btn {
     flex: 1;
+    justify-content: center;
     min-height: 36px;
     padding: 0.5rem;
     font-size: 0.875rem;
