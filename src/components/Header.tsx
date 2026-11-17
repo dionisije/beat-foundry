@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router';
+import { Mail } from 'lucide-react';
 import { TABS } from '../tabs';
 import { describeStatus, useSync } from '../sync/SyncContext';
 import InstallPrompt from './InstallPrompt';
@@ -11,15 +12,24 @@ export default function Header() {
 
   return (
     <header className="header">
-      <h1>{title}</h1>
-      <div className="header-actions">
-        {!currentUser && <AuthPrompt onLogin={onLogin} onSignup={onSignup} onLogout={onLogout} currentUser={currentUser} isLoading={authLoading} error={authError} />}
-        {currentUser && <AuthPrompt onLogin={onLogin} onSignup={onSignup} onLogout={onLogout} currentUser={currentUser} isLoading={authLoading} error={authError} />}
-        <InstallPrompt />
-        <span className="sync-badge" data-status={status} role="status">
-          <span className="sync-dot" aria-hidden="true" />
-          {describeStatus(status, pendingCount)}
-        </span>
+      <div className="header-top">
+        <h1>{title}</h1>
+        <AuthPrompt onLogin={onLogin} onSignup={onSignup} onLogout={onLogout} currentUser={currentUser} isLoading={authLoading} error={authError} />
+      </div>
+      <div className="header-bottom">
+        {currentUser && (
+          <div className="auth-info">
+            <Mail size={16} />
+            <span>{currentUser}</span>
+          </div>
+        )}
+        <div className="header-status">
+          <InstallPrompt />
+          <span className="sync-badge" data-status={status} role="status">
+            <span className="sync-dot" aria-hidden="true" />
+            {describeStatus(status, pendingCount)}
+          </span>
+        </div>
       </div>
     </header>
   );
