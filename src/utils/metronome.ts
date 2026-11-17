@@ -9,6 +9,7 @@ export class Metronome {
   private onBeatCallback?: (beatNumber: number) => void;
   private onCompleteCallback?: () => void;
   private beatInterval: ReturnType<typeof setTimeout> | null = null;
+  private timeSignature: number = 4; // Default 4/4 time signature
 
   constructor(bpm: number = 120) {
     this.bpm = bpm;
@@ -38,8 +39,12 @@ export class Metronome {
   private playBeat(): void {
     if (!this.isPlaying) return;
 
-    // Play a click sound
-    this.synth.triggerAttackRelease('8n', Tone.now());
+    // Determine which beat in the bar (1-indexed, starting with beatCount before increment)
+    const beatInBar = (this.beatCount % this.timeSignature) + 1;
+
+    // Play a higher note for beat 1, lower note for other beats
+    const note = beatInBar === 1 ? 'C5' : 'C4'; // Emphasize first beat with higher pitch
+    this.synth.triggerAttackRelease(note, '8n', Tone.now());
 
     this.beatCount++;
     this.onBeatCallback?.(this.beatCount);
@@ -77,6 +82,10 @@ export class Metronome {
     this.onCompleteCallback = callback;
   }
 
+  setTimeSignature(beats: number): void {
+    this.timeSignature = beats;
+  }
+
   get playing(): boolean {
     return this.isPlaying;
   }
@@ -87,5 +96,9 @@ export class Metronome {
 
   get beatPosition(): number {
     return this.beatCount;
+  }
+
+  get barPosition(): number {
+    return ((this.beatCount % this.timeSignature) || this.timeSignature);
   }
 }

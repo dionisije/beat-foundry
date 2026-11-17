@@ -51,7 +51,7 @@ interface Meta {
 
 export const MAX_ITEMS = 500;
 
-export const db = new Dexie('pwa-starter') as Dexie & {
+export const db = new Dexie('beat-foundry') as Dexie & {
   items: EntityTable<Item, 'id'>;
   meta: EntityTable<Meta, 'key'>;
   songs: EntityTable<Song, 'id'>;
