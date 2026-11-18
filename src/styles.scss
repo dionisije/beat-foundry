@@ -349,11 +349,14 @@ p {
 // FORMS & INPUTS
 // ============================================================================
 
-input {
+input,
+select,
+textarea {
   width: 100%;
   min-height: 44px;
   padding: 0 0.75rem;
   font: inherit;
+  font-size: 1rem;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -362,7 +365,113 @@ input {
   &:focus-visible {
     @include focus-ring;
   }
+}
 
+textarea {
+  min-height: 100px;
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+// ============================================================================
+// RADIX SELECT
+// ============================================================================
+
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--muted);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.select-trigger-small {
+  min-height: 36px;
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.select-icon {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.select-content {
+  z-index: 1000;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.select-viewport {
+  padding: 0.25rem 0;
+}
+
+.select-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+
+  &:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  &[data-state="checked"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+
+    &::after {
+      content: '✓';
+      margin-left: 0.5rem;
+      font-weight: bold;
+    }
+  }
+
+  &[data-disabled] {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+}
+
+.select-scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  color: var(--muted);
+  cursor: pointer;
+  background: var(--surface);
+
+  &:hover {
+    background: var(--accent-soft);
+  }
 }
 
 .add-form {
@@ -925,7 +1034,6 @@ input {
 
   select {
     flex: 1;
-    min-height: 36px;
   }
 }
 

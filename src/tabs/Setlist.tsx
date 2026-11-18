@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, ChevronDown } from 'lucide-react';
+import * as Select from '@radix-ui/react-select';
 import {
   db,
   createSetlist,
@@ -182,30 +183,65 @@ function SetlistContent({ setlist, songs }: { setlist: SetlistType; songs: Song[
       <form className="panel add-form" onSubmit={handleAddSong}>
         <label>
           Add Song
-          <select
-            value={selectedSongId}
-            onChange={(e) => setSelectedSongId(e.target.value)}
-            required
-          >
-            <option value="">Select a song...</option>
-            {songs.map((song) => (
-              <option key={song.id} value={song.id}>
-                {song.name} ({Math.round(song.bpm)} BPM)
-              </option>
-            ))}
-          </select>
+          <Select.Root value={selectedSongId} onValueChange={setSelectedSongId}>
+            <Select.Trigger className="select-trigger" aria-label="Select a song">
+              <Select.Value placeholder="Select a song..." />
+              <Select.Icon className="select-icon">
+                <ChevronDown size={16} />
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content className="select-content">
+                <Select.ScrollUpButton className="select-scroll-btn" />
+                <Select.Viewport className="select-viewport">
+                  {songs.map((song) => (
+                    <Select.Item
+                      key={song.id}
+                      value={song.id}
+                      className="select-item"
+                    >
+                      <Select.ItemText>
+                        {song.name} ({Math.round(song.bpm)} BPM)
+                      </Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.Viewport>
+                <Select.ScrollDownButton className="select-scroll-btn" />
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
         </label>
 
         <label>
           Section (Optional)
-          <select value={selectedSection} onChange={(e) => setSelectedSection(e.target.value)}>
-            <option value="">No section</option>
-            {SECTIONS.map((section) => (
-              <option key={section} value={section}>
-                {section}
-              </option>
-            ))}
-          </select>
+          <Select.Root value={selectedSection} onValueChange={setSelectedSection}>
+            <Select.Trigger className="select-trigger" aria-label="Select a section">
+              <Select.Value placeholder="No section" />
+              <Select.Icon className="select-icon">
+                <ChevronDown size={16} />
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content className="select-content">
+                <Select.ScrollUpButton className="select-scroll-btn" />
+                <Select.Viewport className="select-viewport">
+                  <Select.Item value="" className="select-item">
+                    <Select.ItemText>No section</Select.ItemText>
+                  </Select.Item>
+                  {SECTIONS.map((section) => (
+                    <Select.Item
+                      key={section}
+                      value={section}
+                      className="select-item"
+                    >
+                      <Select.ItemText>{section}</Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.Viewport>
+                <Select.ScrollDownButton className="select-scroll-btn" />
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
         </label>
 
         <button className="btn btn-primary" type="submit" disabled={!selectedSongId}>
@@ -297,19 +333,34 @@ function SetlistItemRow({
         </button>
 
         {sectionEdit === item.id ? (
-          <select
-            autoFocus
-            value={item.section ?? ''}
-            onChange={(e) => void handleSectionChange(e.target.value)}
-            onBlur={() => setSectionEdit(null)}
-          >
-            <option value="">No section</option>
-            {SECTIONS.map((section) => (
-              <option key={section} value={section}>
-                {section}
-              </option>
-            ))}
-          </select>
+          <Select.Root value={item.section ?? ''} onValueChange={(value) => void handleSectionChange(value)}>
+            <Select.Trigger className="select-trigger select-trigger-small" autoFocus aria-label="Select section">
+              <Select.Value placeholder="No section" />
+              <Select.Icon className="select-icon">
+                <ChevronDown size={14} />
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content className="select-content">
+                <Select.ScrollUpButton className="select-scroll-btn" />
+                <Select.Viewport className="select-viewport">
+                  <Select.Item value="" className="select-item">
+                    <Select.ItemText>No section</Select.ItemText>
+                  </Select.Item>
+                  {SECTIONS.map((section) => (
+                    <Select.Item
+                      key={section}
+                      value={section}
+                      className="select-item"
+                    >
+                      <Select.ItemText>{section}</Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.Viewport>
+                <Select.ScrollDownButton className="select-scroll-btn" />
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
         ) : (
           <button
             className="btn btn-secondary btn-small"
