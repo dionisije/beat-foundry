@@ -114,37 +114,21 @@ function SetlistContent({ setlist, songs }: { setlist: SetlistType; songs: Song[
           </Select.Root>
         </label>
 
-        <label>
-          Section (Optional)
-          <Select.Root value={selectedSection} onValueChange={setSelectedSection}>
-            <Select.Trigger className="select-trigger" aria-label="Select a section">
-              <Select.Value placeholder="No section" />
-              <Select.Icon className="select-icon">
-                <ChevronDown size={16} />
-              </Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content className="select-content">
-                <Select.ScrollUpButton className="select-scroll-btn" />
-                <Select.Viewport className="select-viewport">
-                  <Select.Item value="" className="select-item">
-                    <Select.ItemText>No section</Select.ItemText>
-                  </Select.Item>
-                  {SECTIONS.map((section) => (
-                    <Select.Item
-                      key={section}
-                      value={section}
-                      className="select-item"
-                    >
-                      <Select.ItemText>{section}</Select.ItemText>
-                    </Select.Item>
-                  ))}
-                </Select.Viewport>
-                <Select.ScrollDownButton className="select-scroll-btn" />
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
-        </label>
+        <div className="section-select">
+          <span className="section-label">Section (Optional)</span>
+          <div className="section-buttons">
+            {SECTIONS.map((section) => (
+              <button
+                key={section}
+                type="button"
+                className={`btn ${selectedSection === section ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSelectedSection(selectedSection === section ? '' : section)}
+              >
+                {section}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <button className="btn btn-primary" type="submit" disabled={!selectedSongId}>
           <Plus size={18} />
