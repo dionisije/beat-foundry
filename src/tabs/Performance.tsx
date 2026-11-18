@@ -216,18 +216,21 @@ function PerformanceContent({ setlist }: { setlist: Setlist }) {
           )}
         </div>
 
-        <label>
-          Beats to play
-          <input
-            type="number"
-            min="4"
-            max="100"
-            step="4"
-            value={performanceBeats}
-            onChange={(e) => setPerformanceBeats(Math.max(4, parseInt(e.target.value) || 4))}
-            disabled={isMetronomePlaying}
-          />
-        </label>
+        <div>
+          <span className="section-label">Beats to play</span>
+          <div className="beat-buttons">
+            {[16, 20, 24, 28, 32].map((beats) => (
+              <button
+                key={beats}
+                className={`btn ${performanceBeats === beats ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setPerformanceBeats(beats)}
+                disabled={isMetronomePlaying}
+              >
+                {beats}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Tempo Detector Section */}
