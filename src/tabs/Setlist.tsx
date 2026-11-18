@@ -8,7 +8,6 @@ import {
   addSetlistItem,
   deleteSetlistItem,
   updateSetlistItem,
-  type Setlist as SetlistType,
   type SetlistItem,
   type Song
 } from '../db';
@@ -190,7 +189,7 @@ function SetlistBySection({ items, songs }: { items: any[]; songs: Song[] }) {
           <div key={section} className="setlist-section">
             <h4 className="setlist-section-heading">{section}</h4>
             <ul className="setlist-list">
-              {sectionItems.map((item: any, sectionIndex: number) => {
+              {sectionItems.map((item: any) => {
                 const globalIndex = items.findIndex((i) => i.id === item.id);
                 return (
                   <SetlistItemRow
