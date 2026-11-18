@@ -20,23 +20,25 @@ export default function Setlist() {
   const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
   const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
   const [setlistId, setSetlistId] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   // Auto-create default setlist on mount
   useEffect(() => {
     async function ensureSetlist() {
-      if (setlists.length === 0) {
-        const id = await createSetlist({ name: DEFAULT_SETLIST_NAME });
-        setSetlistId(id);
-      } else if (!setlistId) {
-        setSetlistId(setlists[0].id);
+      if (!initialized && setlists.length >= 0) {
+        if (setlists.length === 0) {
+          const id = await createSetlist({ name: DEFAULT_SETLIST_NAME });
+          setSetlistId(id);
+        } else if (setlists.length > 0 && !setlistId) {
+          setSetlistId(setlists[0].id);
+        }
+        setInitialized(true);
       }
     }
     void ensureSetlist();
-  }, [setlists, setlistId]);
+  }, [setlists, setlistId, initialized]);
 
-  const activeSetlist = setlists.find((s) => s.id === setlistId);
-
-  if (!activeSetlist) {
+  if (!initialized || !setlistId) {
     return (
       <div className="stack">
         <p className="empty">Loading setlist...</p>
@@ -46,19 +48,19 @@ export default function Setlist() {
 
   return (
     <div className="stack">
-      <SetlistContent setlist={activeSetlist} songs={songs} />
+      <SetlistContent setlistId={setlistId} songs={songs} />
     </div>
   );
 }
 
-function SetlistContent({ setlist, songs }: { setlist: SetlistType; songs: Song[] }) {
+function SetlistContent({ setlistId, songs }: { setlistId: string; songs: Song[] }) {
   const items = useLiveQuery(
     () =>
       db.setlistItems
-        .filter((item) => item.setlistId === setlist.id && item.deleted === 0)
+        .filter((item) => item.setlistId === setlistId && item.deleted === 0)
         .sortBy('position'),
     [],
-    [setlist.id]
+    [setlistId]
   );
 
   const [selectedSongId, setSelectedSongId] = useState<string>('');
@@ -68,11 +70,11 @@ function SetlistContent({ setlist, songs }: { setlist: SetlistType; songs: Song[
     e.preventDefault();
     if (!selectedSongId) return;
 
-    const maxPosition = items.length > 0 ? Math.max(...items.map((i: any) => i.position ?? 0)) + 1 : 0;
+    const nextPosition = items.length > 0 ? Math.max(...items.map((i: any) => i.position ?? 0)) + 1 : 1;
     await addSetlistItem({
-      setlistId: setlist.id,
+      setlistId,
       songId: selectedSongId,
-      position: maxPosition,
+      position: nextPosition,
       section: selectedSection || undefined
     });
 

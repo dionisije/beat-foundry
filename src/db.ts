@@ -188,3 +188,19 @@ export async function updateSetlistItem(id: string, changes: Partial<Pick<Setlis
 export async function deleteSetlistItem(id: string) {
   await db.setlistItems.update(id, { deleted: 1, updatedAt: Date.now(), pendingSync: 1 });
 }
+
+// Clear all setlist data (soft delete - will sync to Firebase)
+export async function clearAllSetlistData() {
+  const setlists = await db.setlists.where('deleted').equals(0).toArray();
+  const items = await db.setlistItems.where('deleted').equals(0).toArray();
+
+  // Soft delete all items
+  for (const item of items) {
+    await db.setlistItems.update(item.id, { deleted: 1, updatedAt: Date.now(), pendingSync: 1 });
+  }
+
+  // Soft delete all setlists
+  for (const setlist of setlists) {
+    await db.setlists.update(setlist.id, { deleted: 1, updatedAt: Date.now(), pendingSync: 1 });
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { clearLocalData } from '../db';
+import { clearLocalData, clearAllSetlistData } from '../db';
 import { describeStatus, useSync } from '../sync/SyncContext';
 import { formatTime } from '../format';
 
@@ -55,9 +55,22 @@ export default function Settings() {
           If storage isn't protected, the browser may clear it when the device runs low on space. Installing the
           app to your home screen usually helps.
         </p>
-        <button className="btn btn-danger" onClick={() => void handleClear()}>
-          Clear local data
-        </button>
+        <div className="button-group">
+          <button
+            className="btn btn-danger"
+            onClick={async () => {
+              if (confirm('Clear all setlist data (songs will be preserved)?')) {
+                await clearAllSetlistData();
+                void sync();
+              }
+            }}
+          >
+            Clear setlist data
+          </button>
+          <button className="btn btn-danger" onClick={() => void handleClear()}>
+            Clear all local data
+          </button>
+        </div>
       </section>
 
       <section className="panel">
