@@ -27,8 +27,8 @@ export default function Setlist() {
   useEffect(() => {
     async function ensureSetlist() {
       if (!initialized) {
-        // If we have a saved setlistId, use it (assume it's valid)
-        if (setlistId) {
+        // If we have a saved setlistId AND it exists in the database, use it
+        if (setlistId && setlists.some((s) => s.id === setlistId)) {
           setInitialized(true);
           return;
         }
