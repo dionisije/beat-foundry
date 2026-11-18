@@ -16,7 +16,7 @@ const SECTIONS = ['Set 1', 'Set 2', 'Set 3', 'Encore'];
 const DEFAULT_SETLIST_NAME = 'My Setlist';
 
 export default function Setlist() {
-  const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
+  const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), undefined, []);
   const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
   const [setlistId, setSetlistId] = useState<string | null>(() => {
     return localStorage.getItem('selectedSetlistId');
@@ -26,7 +26,7 @@ export default function Setlist() {
   // Auto-create default setlist on mount
   useEffect(() => {
     async function ensureSetlist() {
-      if (!initialized) {
+      if (!initialized && setlists !== undefined) {
         // If we have a saved setlistId AND it exists in the database, use it
         if (setlistId && setlists.some((s) => s.id === setlistId)) {
           setInitialized(true);
