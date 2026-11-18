@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import { TempoDetector } from '../utils/tempoDetector';
 
+const MICROPHONE_PERMISSION_KEY = 'microphonePermissionRequested';
+
 export default function Tempo() {
   const [bpm, setBpm] = useState<number | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -12,12 +14,33 @@ export default function Tempo() {
   useEffect(() => {
     detectorRef.current = new TempoDetector();
 
+    // Request microphone permission on mount if not already requested
+    const hasRequestedPermission = localStorage.getItem(MICROPHONE_PERMISSION_KEY);
+    if (!hasRequestedPermission) {
+      requestMicrophonePermission();
+    }
+
     return () => {
       if (detectorRef.current?.isActive) {
         detectorRef.current.stopListening();
       }
     };
   }, []);
+
+  async function requestMicrophonePermission() {
+    try {
+      // Request microphone permission proactively
+      await navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        // Stop the stream immediately - we just wanted to request permission
+        stream.getTracks().forEach((track) => track.stop());
+      });
+      localStorage.setItem(MICROPHONE_PERMISSION_KEY, 'requested');
+    } catch (err) {
+      // Permission denied or error - still mark as requested so we don't ask again
+      localStorage.setItem(MICROPHONE_PERMISSION_KEY, 'requested');
+      console.log('Microphone permission not granted or not available');
+    }
+  }
 
   useEffect(() => {
     if (!isListening) return;
