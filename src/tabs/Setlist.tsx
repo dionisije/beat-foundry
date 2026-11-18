@@ -79,7 +79,6 @@ function SetlistContent({ setlistId, songs }: { setlistId: string; songs: Song[]
     });
 
     setSelectedSongId('');
-    setSelectedSection('');
   }
 
   return (
