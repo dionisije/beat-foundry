@@ -7,11 +7,25 @@ export default function Settings() {
   const { status, error, pendingCount, lastSyncedAt, sync } = useSync();
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved as 'light' | 'dark') || 'dark';
+  });
 
   useEffect(() => {
     void navigator.storage?.persisted?.().then(setPersisted);
     void navigator.storage?.estimate?.().then(({ usage = 0 }) => setUsage(`${(usage / 1024).toFixed(0)} KB`));
   }, []);
+
+  useEffect(() => {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  }
 
   async function handleClear() {
     const warning =
@@ -41,6 +55,22 @@ export default function Settings() {
             Sync now
           </button>
         )}
+      </section>
+
+      <section className="panel">
+        <h2>Appearance</h2>
+        <div className="theme-control">
+          <span>Dark Mode</span>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
+              aria-label="Toggle dark mode"
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
       </section>
 
       <section className="panel">
