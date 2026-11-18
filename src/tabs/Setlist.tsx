@@ -1,11 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Trash2, Plus, ChevronDown } from 'lucide-react';
 import * as Select from '@radix-ui/react-select';
 import {
   db,
   createSetlist,
-  deleteSetlist,
   addSetlistItem,
   deleteSetlistItem,
   updateSetlistItem,
@@ -15,136 +14,39 @@ import {
 } from '../db';
 
 const SECTIONS = ['Set 1', 'Set 2', 'Set 3', 'Encore'];
+const DEFAULT_SETLIST_NAME = 'My Setlist';
 
 export default function Setlist() {
   const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
   const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
-  const [activeSetlistId, setActiveSetlistId] = useState<string | null>(null);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newSetlistName, setNewSetlistName] = useState('');
+  const [setlistId, setSetlistId] = useState<string | null>(null);
 
-  async function handleCreateSetlist(e: FormEvent) {
-    e.preventDefault();
-    if (!newSetlistName.trim()) return;
+  // Auto-create default setlist on mount
+  useEffect(() => {
+    async function ensureSetlist() {
+      if (setlists.length === 0) {
+        const id = await createSetlist({ name: DEFAULT_SETLIST_NAME });
+        setSetlistId(id);
+      } else if (!setlistId) {
+        setSetlistId(setlists[0].id);
+      }
+    }
+    void ensureSetlist();
+  }, [setlists, setlistId]);
 
-    const id = await createSetlist({ name: newSetlistName });
-    setNewSetlistName('');
-    setShowNewForm(false);
-    setActiveSetlistId(id);
-  }
-
-  if (setlists.length === 0) {
-    return (
-      <div className="stack">
-        <div className="panel">
-          <h2>Create Your First Setlist</h2>
-          <form onSubmit={handleCreateSetlist}>
-            <label>
-              Setlist Name
-              <input
-                value={newSetlistName}
-                onChange={(e) => setNewSetlistName(e.target.value)}
-                placeholder="e.g., Acoustic Set"
-                required
-              />
-            </label>
-            <button className="btn btn-primary" type="submit" disabled={!newSetlistName.trim()}>
-              Create Setlist
-            </button>
-          </form>
-        </div>
-        <p className="empty">Create a setlist to organize your songs for performances.</p>
-      </div>
-    );
-  }
-
-  const activeSetlist = setlists.find((s) => s.id === activeSetlistId) ?? (setlists.length > 0 ? setlists[0] : null);
-
-  if (activeSetlist && !activeSetlistId) {
-    setActiveSetlistId(activeSetlist.id);
-  }
+  const activeSetlist = setlists.find((s) => s.id === setlistId);
 
   if (!activeSetlist) {
     return (
       <div className="stack">
-        <p className="empty">Create a setlist to get started.</p>
+        <p className="empty">Loading setlist...</p>
       </div>
     );
   }
 
   return (
     <div className="stack">
-      {/* Setlist Selector */}
-      <div className="panel">
-        <div className="tabs-selector">
-          {setlists.map((setlist) => (
-            <button
-              key={setlist.id}
-              className={`tab-btn ${activeSetlistId === setlist.id ? 'active' : ''}`}
-              onClick={() => setActiveSetlistId(setlist.id)}
-            >
-              {setlist.name}
-            </button>
-          ))}
-          <button
-            className="tab-btn add-tab"
-            onClick={() => setShowNewForm(true)}
-            title="Create new setlist"
-          >
-            +
-          </button>
-        </div>
-
-        {activeSetlist && (
-          <button
-            className="btn btn-danger btn-small"
-            onClick={() => {
-              if (confirm(`Delete "${activeSetlist.name}"?`)) {
-                void deleteSetlist(activeSetlist.id);
-                setActiveSetlistId(null);
-              }
-            }}
-          >
-            Delete Setlist
-          </button>
-        )}
-      </div>
-
-      {/* New Setlist Form */}
-      {showNewForm && (
-        <form className="panel add-form" onSubmit={handleCreateSetlist}>
-          <label>
-            Setlist Name
-            <input
-              value={newSetlistName}
-              onChange={(e) => setNewSetlistName(e.target.value)}
-              placeholder="e.g., Evening Performance"
-              autoFocus
-              required
-            />
-          </label>
-          <div className="button-group">
-            <button className="btn btn-primary" type="submit" disabled={!newSetlistName.trim()}>
-              Create
-            </button>
-            <button
-              className="btn"
-              type="button"
-              onClick={() => {
-                setNewSetlistName('');
-                setShowNewForm(false);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Active Setlist Content */}
-      {activeSetlist && (
-        <SetlistContent setlist={activeSetlist} songs={songs} />
-      )}
+      <SetlistContent setlist={activeSetlist} songs={songs} />
     </div>
   );
 }
