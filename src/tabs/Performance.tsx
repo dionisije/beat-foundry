@@ -153,32 +153,34 @@ function PerformanceContent({ setlist }: { setlist: Setlist }) {
       {/* Current Song Display */}
       <div className="panel current-song">
         <h2>Current Song</h2>
-        <div className="song-display">
-          <h1 className="song-title">{currentSong.name}</h1>
-          <p className="song-tempo">{Math.round(currentSong.bpm)} BPM</p>
-          <p className="song-position">
-            Song {currentIndex + 1} of {items.length}
-          </p>
-          {currentItem.section && (
-            <p className="section-info">{currentItem.section}</p>
-          )}
-        </div>
+        <h1 className="song-title">{currentSong.name}</h1>
 
-        <div className="button-group">
+        <div className="song-container">
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary nav-btn"
             onClick={handlePrevious}
             disabled={currentIndex === 0}
+            title="Previous song"
           >
             <ChevronLeft size={20} />
-            Previous
           </button>
+
+          <div className="song-display">
+            <p className="song-tempo">{Math.round(currentSong.bpm)} BPM</p>
+            <p className="song-position">
+              Song {currentIndex + 1} of {items.length}
+            </p>
+            {currentItem.section && (
+              <p className="section-info">{currentItem.section}</p>
+            )}
+          </div>
+
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary nav-btn"
             onClick={handleNext}
             disabled={currentIndex === items.length - 1}
+            title="Next song"
           >
-            Next
             <ChevronRight size={20} />
           </button>
         </div>
