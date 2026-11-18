@@ -54,14 +54,14 @@ export default function Setlist() {
 }
 
 function SetlistContent({ setlistId, songs }: { setlistId: string; songs: Song[] }) {
-  const items = useLiveQuery(
-    () =>
-      db.setlistItems
-        .filter((item) => item.setlistId === setlistId && item.deleted === 0)
-        .sortBy('position'),
+  // Fetch all items and filter in React for better debugging
+  const allItems = useLiveQuery(
+    () => db.setlistItems.where('deleted').equals(0).toArray(),
     [],
-    [setlistId]
+    []
   );
+
+  const items = allItems.filter((item) => item.setlistId === setlistId).sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   const [selectedSongId, setSelectedSongId] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
