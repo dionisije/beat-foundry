@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown } from 'lucide-react';
 import { db, createSong, deleteSong, updateSong, type Song } from '../db';
 
 export default function Repertoire() {
@@ -11,6 +11,7 @@ export default function Repertoire() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'bpm'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -51,33 +52,52 @@ export default function Repertoire() {
 
   return (
     <div className="stack">
-      <form className="panel add-form" onSubmit={handleAdd}>
-        <label>
-          Song Name
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Wonderwall"
-            required
+      <div className="panel">
+        <button
+          className="collapsible-header"
+          onClick={() => setShowAddForm(!showAddForm)}
+          aria-expanded={showAddForm}
+        >
+          <span>Add Song</span>
+          <ChevronDown
+            size={18}
+            style={{
+              transform: showAddForm ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s'
+            }}
           />
-        </label>
-        <label>
-          BPM
-          <input
-            type="number"
-            value={bpm}
-            onChange={(e) => setBpm(e.target.value)}
-            min="40"
-            max="300"
-            step="0.1"
-            required
-          />
-        </label>
-        <button className="btn btn-primary" type="submit" disabled={!name.trim() || !bpm}>
-          Add Song
         </button>
-        {error && <p className="error">{error}</p>}
-      </form>
+
+        {showAddForm && (
+          <form className="add-form" onSubmit={handleAdd}>
+            <label>
+              Song Name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Wonderwall"
+                required
+              />
+            </label>
+            <label>
+              BPM
+              <input
+                type="number"
+                value={bpm}
+                onChange={(e) => setBpm(e.target.value)}
+                min="40"
+                max="300"
+                step="0.1"
+                required
+              />
+            </label>
+            <button className="btn btn-primary" type="submit" disabled={!name.trim() || !bpm}>
+              Add Song
+            </button>
+            {error && <p className="error">{error}</p>}
+          </form>
+        )}
+      </div>
 
       <div className="panel">
         <div className="filter-controls">
