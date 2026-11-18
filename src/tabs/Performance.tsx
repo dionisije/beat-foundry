@@ -7,9 +7,9 @@ import { TempoDetector } from '../utils/tempoDetector';
 
 export default function Performance() {
   const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
-  const [activeSetlistId, setActiveSetlistId] = useState<string | null>(null);
+  const [activeSetlistId] = useState<string | null>(() => localStorage.getItem('selectedSetlistId'));
 
-  if (setlists.length === 0) {
+  if (setlists.length === 0 || !activeSetlistId) {
     return (
       <div className="stack">
         <p className="empty">Create a setlist first to use Performance mode.</p>
@@ -17,26 +17,10 @@ export default function Performance() {
     );
   }
 
-  const activeSetlist = setlists.find((s) => s.id === activeSetlistId) ?? setlists[0];
+  const activeSetlist = setlists.find((s) => s.id === activeSetlistId);
 
   return (
     <div className="stack">
-      {/* Setlist Selector */}
-      <div className="panel">
-        <div className="tabs-selector">
-          {setlists.map((setlist) => (
-            <button
-              key={setlist.id}
-              className={`tab-btn ${activeSetlistId === setlist.id ? 'active' : ''}`}
-              onClick={() => setActiveSetlistId(setlist.id)}
-            >
-              {setlist.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Performance Content */}
       {activeSetlist && (
         <PerformanceContent setlist={activeSetlist} />
       )}
