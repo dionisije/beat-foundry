@@ -16,17 +16,25 @@ const SECTIONS = ['Set 1', 'Set 2', 'Set 3', 'Encore'];
 const DEFAULT_SETLIST_NAME = 'My Setlist';
 
 export default function Setlist() {
-  const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), undefined, []);
+  const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
   const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
   const [setlistId, setSetlistId] = useState<string | null>(() => {
     return localStorage.getItem('selectedSetlistId');
   });
   const [initialized, setInitialized] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Track when data has loaded
+  useEffect(() => {
+    if (setlists.length > 0 || (setlists.length === 0 && initialized)) {
+      setDataLoaded(true);
+    }
+  }, [setlists, initialized]);
 
   // Auto-create default setlist on mount
   useEffect(() => {
     async function ensureSetlist() {
-      if (!initialized && setlists !== undefined) {
+      if (!initialized && dataLoaded) {
         // If we have a saved setlistId AND it exists in the database, use it
         if (setlistId && setlists.some((s) => s.id === setlistId)) {
           setInitialized(true);
@@ -49,7 +57,7 @@ export default function Setlist() {
       }
     }
     void ensureSetlist();
-  }, [setlists, setlistId, initialized]);
+  }, [setlists, setlistId, initialized, dataLoaded]);
 
   // Persist setlistId to localStorage when it changes
   useEffect(() => {
