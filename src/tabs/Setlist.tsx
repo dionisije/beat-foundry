@@ -19,24 +19,45 @@ const DEFAULT_SETLIST_NAME = 'My Setlist';
 export default function Setlist() {
   const setlists = useLiveQuery(() => db.setlists.where('deleted').equals(0).toArray(), [], []);
   const songs = useLiveQuery(() => db.songs.where('deleted').equals(0).sortBy('name'), [], []);
-  const [setlistId, setSetlistId] = useState<string | null>(null);
+  const [setlistId, setSetlistId] = useState<string | null>(() => {
+    return localStorage.getItem('selectedSetlistId');
+  });
   const [initialized, setInitialized] = useState(false);
 
   // Auto-create default setlist on mount
   useEffect(() => {
     async function ensureSetlist() {
-      if (!initialized && setlists.length >= 0) {
-        if (setlists.length === 0) {
+      if (!initialized) {
+        // If we have a saved setlistId, use it (assume it's valid)
+        if (setlistId) {
+          setInitialized(true);
+          return;
+        }
+
+        // Otherwise, find or create a setlist
+        if (setlists.length > 0) {
+          // Use first existing setlist
+          const id = setlists[0].id;
+          setSetlistId(id);
+          localStorage.setItem('selectedSetlistId', id);
+        } else if (setlists.length === 0) {
+          // Create a new default setlist
           const id = await createSetlist({ name: DEFAULT_SETLIST_NAME });
           setSetlistId(id);
-        } else if (setlists.length > 0 && !setlistId) {
-          setSetlistId(setlists[0].id);
+          localStorage.setItem('selectedSetlistId', id);
         }
         setInitialized(true);
       }
     }
     void ensureSetlist();
   }, [setlists, setlistId, initialized]);
+
+  // Persist setlistId to localStorage when it changes
+  useEffect(() => {
+    if (setlistId) {
+      localStorage.setItem('selectedSetlistId', setlistId);
+    }
+  }, [setlistId]);
 
   if (!initialized || !setlistId) {
     return (
