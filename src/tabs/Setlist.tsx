@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Trash2, Plus, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, ChevronDown, Tag } from 'lucide-react';
 import * as Select from '@radix-ui/react-select';
 import {
   db,
@@ -162,17 +162,67 @@ function SetlistContent({ setlistId, songs }: { setlistId: string; songs: Song[]
         <p className="empty">Add songs from your repertoire to create your setlist.</p>
       ) : (
         <div className="panel setlist-items">
-          <h3>Setlist Items ({items.length})</h3>
+          <h3>Setlist ({items.length} songs)</h3>
+          <SetlistBySection items={items} songs={songs} />
+        </div>
+      )}
+    </>
+  );
+}
+
+function SetlistBySection({ items, songs }: { items: any[]; songs: Song[] }) {
+  const SECTION_ORDER = ['Set 1', 'Set 2', 'Set 3', 'Encore'];
+  const itemsBySection: Record<string, any[]> = {};
+
+  SECTION_ORDER.forEach((section) => {
+    itemsBySection[section] = items.filter((item) => item.section === section);
+  });
+
+  itemsBySection['No Section'] = items.filter((item) => !item.section);
+
+  return (
+    <>
+      {SECTION_ORDER.map((section) => {
+        const sectionItems = itemsBySection[section];
+        if (sectionItems.length === 0) return null;
+
+        return (
+          <div key={section} className="setlist-section">
+            <h4 className="setlist-section-heading">{section}</h4>
+            <ul className="setlist-list">
+              {sectionItems.map((item: any, sectionIndex: number) => {
+                const globalIndex = items.findIndex((i) => i.id === item.id);
+                return (
+                  <SetlistItemRow
+                    key={item.id}
+                    item={item}
+                    index={globalIndex}
+                    total={items.length}
+                    song={songs.find((s) => s.id === item.songId)}
+                  />
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+
+      {itemsBySection['No Section'].length > 0 && (
+        <div className="setlist-section">
+          <h4 className="setlist-section-heading">No Section</h4>
           <ul className="setlist-list">
-            {items.map((item: any, index: number) => (
-              <SetlistItemRow
-                key={item.id}
-                item={item}
-                index={index}
-                total={items.length}
-                song={songs.find((s) => s.id === item.songId)}
-              />
-            ))}
+            {itemsBySection['No Section'].map((item: any) => {
+              const globalIndex = items.findIndex((i) => i.id === item.id);
+              return (
+                <SetlistItemRow
+                  key={item.id}
+                  item={item}
+                  index={globalIndex}
+                  total={items.length}
+                  song={songs.find((s) => s.id === item.songId)}
+                />
+              );
+            })}
           </ul>
         </div>
       )}
@@ -212,14 +262,8 @@ function SetlistItemRow({
   return (
     <li className="setlist-item">
       <div className="item-content">
-        {item.section && (
-          <span className="section-badge">{item.section}</span>
-        )}
-        <div className="item-info">
-          <span className="item-number">{index + 1}.</span>
-          <span className="song-name">{song.name}</span>
-          <span className="song-bpm">{Math.round(song.bpm)} BPM</span>
-        </div>
+        <span className="item-number">{index + 1}.</span>
+        <span className="song-name">{song.name}</span>
       </div>
 
       <div className="row-actions">
@@ -241,7 +285,12 @@ function SetlistItemRow({
         </button>
 
         {sectionEdit === item.id ? (
-          <Select.Root value={item.section ?? ''} onValueChange={(value) => void handleSectionChange(value)}>
+          <Select.Root
+            value={item.section ?? ''}
+            onValueChange={(value) => void handleSectionChange(value)}
+            open={true}
+            onOpenChange={(open) => !open && setSectionEdit(null)}
+          >
             <Select.Trigger className="select-trigger select-trigger-small" autoFocus aria-label="Select section">
               <Select.Value placeholder="No section" />
               <Select.Icon className="select-icon">
@@ -271,10 +320,11 @@ function SetlistItemRow({
           </Select.Root>
         ) : (
           <button
-            className="btn btn-secondary btn-small"
+            className="icon-btn"
             onClick={() => setSectionEdit(item.id)}
+            title={`Edit section (currently: ${item.section ?? 'No section'})`}
           >
-            {item.section ?? 'Add section'}
+            <Tag size={18} />
           </button>
         )}
 

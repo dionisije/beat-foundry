@@ -906,7 +906,7 @@ textarea {
 
 .row-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0;
 
   .edit-form & {
     gap: 0.5rem;
@@ -1105,6 +1105,21 @@ textarea {
   align-items: stretch;
 }
 
+.setlist-section {
+  &:not(:last-child) {
+    margin-bottom: 2rem;
+  }
+}
+
+.setlist-section-heading {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
 .setlist-list {
   list-style: none;
   margin: 0;
@@ -1129,26 +1144,7 @@ textarea {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-width: 0;
-}
-
-.section-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.item-info {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   min-width: 0;
 }
 
@@ -1156,6 +1152,7 @@ textarea {
   color: var(--muted);
   font-weight: 600;
   min-width: 2rem;
+  flex-shrink: 0;
 }
 
 // Performance Mode
