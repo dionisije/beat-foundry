@@ -15,11 +15,28 @@ export class TempoDetector {
   private beatTimings: BeatTimings = { times: [], bpms: [] };
   private lastBeatTime = 0;
   private beatThreshold = 0.1; // seconds
+  private highPassFilter: BiquadFilterNode;
+  private lowPassFilter: BiquadFilterNode;
 
   constructor() {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = 2048;
+
+    // Create frequency filters for drum detection (40 Hz - 15 kHz for kick/snare/hi-hat)
+    this.highPassFilter = this.audioContext.createBiquadFilter();
+    this.highPassFilter.type = 'highpass';
+    this.highPassFilter.frequency.value = 40; // Cut below 40 Hz (remove rumble, keep kick drum)
+    this.highPassFilter.Q.value = 0.7;
+
+    this.lowPassFilter = this.audioContext.createBiquadFilter();
+    this.lowPassFilter.type = 'lowpass';
+    this.lowPassFilter.frequency.value = 15000; // Cut above 15 kHz (focus on snare/hi-hat)
+    this.lowPassFilter.Q.value = 0.7;
+
+    // Chain filters: microphone -> highpass -> lowpass -> analyser
+    this.highPassFilter.connect(this.lowPassFilter);
+    this.lowPassFilter.connect(this.analyser);
   }
 
   async startListening(): Promise<void> {
@@ -28,7 +45,7 @@ export class TempoDetector {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.microphone = this.audioContext.createMediaStreamSource(stream);
-      this.microphone.connect(this.analyser);
+      this.microphone.connect(this.highPassFilter);
       this.isListening = true;
       this.beatTimings = { times: [], bpms: [] };
       this.lastBeatTime = Date.now();
